@@ -408,6 +408,19 @@ PScore evaluate_space(const Position& pos) {
 
 Score evaluate_white_pov(const Position& pos, const PsqtState& psqt_state) {
     const Color us    = pos.active_color();
+
+    bool white_has_light_sq_bishops = (pos.bitboard_for(Color::White, PieceType::Bishop) & Bitboard::squares_of_color(Color::White)).any();
+    bool black_has_light_sq_bishops = (pos.bitboard_for(Color::Black, PieceType::Bishop) & Bitboard::squares_of_color(Color::White)).any();
+    bool white_has_dark_sq_bishops  = (pos.bitboard_for(Color::White, PieceType::Bishop) & Bitboard::squares_of_color(Color::Black)).any();
+    bool black_has_dark_sq_bishops  = (pos.bitboard_for(Color::Black, PieceType::Bishop) & Bitboard::squares_of_color(Color::Black)).any();
+    bool bishop_imbalance_light_sq  = (white_has_light_sq_bishops && !black_has_light_sq_bishops)
+                                      || (black_has_light_sq_bishops && !white_has_light_sq_bishops);
+    bool bishop_imbalance_dark_sq   = (white_has_dark_sq_bishops && !black_has_dark_sq_bishops)
+                                      || (black_has_dark_sq_bishops && !white_has_dark_sq_bishops);
+    bool bishop_imbalance_both      = (white_has_light_sq_bishops && white_has_dark_sq_bishops && !black_has_light_sq_bishops && !black_has_dark_sq_bishops)
+                                      || (black_has_light_sq_bishops && black_has_dark_sq_bishops && !white_has_light_sq_bishops && !white_has_dark_sq_bishops);
+    bool ocb                        = bishop_imbalance_light_sq && bishop_imbalance_dark_sq && !bishop_imbalance_both;
+    
     usize       phase = pos.piece_count(Color::White, PieceType::Knight)
                 + pos.piece_count(Color::Black, PieceType::Knight)
                 + pos.piece_count(Color::White, PieceType::Bishop)
@@ -417,7 +430,8 @@ Score evaluate_white_pov(const Position& pos, const PsqtState& psqt_state) {
                        + pos.piece_count(Color::Black, PieceType::Rook))
                 + 4
                     * (pos.piece_count(Color::White, PieceType::Queen)
-                       + pos.piece_count(Color::Black, PieceType::Queen));
+                       + pos.piece_count(Color::Black, PieceType::Queen))
+                - ocb;
 
     phase = std::min<usize>(phase, 24);
 
