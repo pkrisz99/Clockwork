@@ -644,9 +644,14 @@ Value Worker::search(
             ss->excluded_move    = m;
             Value singular_value = search<IS_MAIN, false>(pos, ss, singular_beta - 1, singular_beta,
                                                           singular_depth, ply, cutnode);
+            bool only_move       = singular_value == -VALUE_INF;
             ss->excluded_move    = Move::none();
 
-            if (singular_value < singular_beta) {
+            if (only_move) {
+                extension = 1 + !PV_NODE;
+            }
+            
+            else if (singular_value < singular_beta) {
                 extension = 1;
 
                 // Double Extension
@@ -861,7 +866,7 @@ Value Worker::search(
     // Checkmate / Stalemate check
     if (best_value == -VALUE_INF) {
         if (excluded) {
-            return alpha;
+            return -VALUE_INF;
         } else {
             if (pos.is_in_check()) {
                 return mated_in(ply);
