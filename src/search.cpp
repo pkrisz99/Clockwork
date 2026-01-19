@@ -639,7 +639,7 @@ Value Worker::search(
             && tt_data->depth >= depth - tuned::sing_depth_margin
             && tt_data->bound() != Bound::Upper) {
             int   depth_margin      = tt_data->depth + tuned::sing_depth_margin - depth;
-            int   margin_multiplier = 1 + (depth_margin == 1) + 2 * (depth_margin == 0);
+            int   margin_multiplier = 1 + 2 * (depth_margin == 0);
             Value singular_beta     = tt_data->score - depth * tuned::sing_beta_margin * margin_multiplier;
             int   singular_depth    = depth / 2;
 
@@ -653,14 +653,14 @@ Value Worker::search(
 
                 // Double Extension
                 Value double_margin =
-                  margin_multiplier * tuned::dext_margin - (move_history / tuned::dext_hist_div * quiet);
+                  margin_multiplier * (tuned::dext_margin - (move_history / tuned::dext_hist_div * quiet));
                 if (!PV_NODE && singular_value <= singular_beta - double_margin) {
                     extension = 2;
                 }
 
                 // Triple Extension
                 Value triple_margin =
-                  margin_multiplier * tuned::triext_margin - (move_history / tuned::triext_hist_div * quiet);
+                  margin_multiplier * (tuned::triext_margin - (move_history / tuned::triext_hist_div * quiet));
                 if (!PV_NODE && quiet && singular_value <= singular_beta - triple_margin) {
                     extension = 3;
                 }
