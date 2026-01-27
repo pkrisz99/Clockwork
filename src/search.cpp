@@ -612,7 +612,7 @@ Value Worker::search(
             }
 
             // Forward Futility Pruning (FFP)
-            Value futility = ss->static_eval + tuned::ffp_margin_base
+            Value futility = ss->static_eval + tuned::ffp_margin_base + tuned::ffp_margin_improving * improving
                            + tuned::ffp_margin_mult * depth + move_history / tuned::ffp_hist_div;
             if (quiet && !is_in_check && depth <= tuned::ffp_depth && futility <= alpha) {
                 moves.skip_quiets();
